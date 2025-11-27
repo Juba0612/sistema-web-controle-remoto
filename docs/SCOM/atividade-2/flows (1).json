@@ -1,0 +1,199 @@
+[
+    {
+        "id": "2a1ceb439cba946a",
+        "type": "tab",
+        "label": "Fluxo 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4227148f4ca7179a",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "POST/api/data",
+        "url": "/api/data",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 200,
+        "y": 220,
+        "wires": [
+            [
+                "7e1774cdb392d03e"
+            ]
+        ]
+    },
+    {
+        "id": "5c25b62afa082f9e",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/commands",
+        "url": "/api/commands",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 210,
+        "y": 280,
+        "wires": [
+            [
+                "1fbf70d6acfb658c"
+            ]
+        ]
+    },
+    {
+        "id": "8155e4d25675980a",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "POST/api/send",
+        "url": "/api/send",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 200,
+        "y": 340,
+        "wires": [
+            [
+                "8666064c2d7ea8b1"
+            ]
+        ]
+    },
+    {
+        "id": "7e1774cdb392d03e",
+        "type": "json",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "31495396a96518e1"
+            ]
+        ]
+    },
+    {
+        "id": "1fbf70d6acfb658c",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Buscar comando",
+        "func": "// Busca o último comando registrado\nmsg.topic = `\n  SELECT * FROM commands\n  ORDER BY id DESC\n  LIMIT 1;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 280,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "31495396a96518e1",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Montar SQL Sensor",
+        "func": "// Converte o payload JSON (string) em objeto\nlet data;\ntry {\n    data = JSON.parse(msg.payload);\n} catch (error) {\n    node.error(\"Invalid JSON payload\", msg);\n    return null;\n}\n\n// Extrai as variáveis\nlet throttle_angle = data.throttle_angle;\nlet temp_inlet = data.temp_inlet;\nlet temp_outlet = data.temp_outlet;\nlet pressure = data.pressure;\nlet air_mass = data.air_mass;\n\n// Cria o comando SQL e os valores\nmsg.topic = `\n    INSERT INTO sensor_data \n    (throttle_angle, temp_inlet, temp_outlet, pressure, air_mass)\n    VALUES (?,?,?,?,?)\n`;\n\nmsg.payload = [throttle_angle, temp_inlet, temp_outlet, pressure, air_mass];\n\n// Retorna o objeto atualizado\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 220,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "38cde51a2b4844da",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Inserir comando",
+        "func": "// Exemplo: painel envia { \"temperatura_alvo\": 45 }\nlet temperatura_alvo = msg.payload.temperatura_alvo;\n\nmsg.topic = `\n  INSERT INTO commands (temperatura_alvo, data_hora)\n  VALUES (${temperatura_alvo}, NOW());\n`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 340,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "8666064c2d7ea8b1",
+        "type": "json",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 410,
+        "y": 340,
+        "wires": [
+            [
+                "38cde51a2b4844da"
+            ]
+        ]
+    },
+    {
+        "id": "89bb832fc9f7d9e6",
+        "type": "mysql",
+        "z": "2a1ceb439cba946a",
+        "mydb": "47f16fd6cc2825ea",
+        "name": "MySQL",
+        "x": 720,
+        "y": 280,
+        "wires": [
+            [
+                "6f48bece4818caa4"
+            ]
+        ]
+    },
+    {
+        "id": "6f48bece4818caa4",
+        "type": "http response",
+        "z": "2a1ceb439cba946a",
+        "name": "Resposta",
+        "statusCode": "200",
+        "headers": {},
+        "x": 800,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "47f16fd6cc2825ea",
+        "type": "MySQLdatabase",
+        "name": "Conexão Local",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "ltr_control_equipe4",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "95d6671330b3650e",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-mysql": "2.0.0"
+        }
+    }
+]
