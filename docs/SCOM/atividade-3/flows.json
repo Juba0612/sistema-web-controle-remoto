@@ -1,0 +1,1547 @@
+[
+    {
+        "id": "2a1ceb439cba946a",
+        "type": "tab",
+        "label": "Fluxo 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4227148f4ca7179a",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "POST/api/data",
+        "url": "/api/data",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 120,
+        "wires": [
+            [
+                "7e1774cdb392d03e"
+            ]
+        ]
+    },
+    {
+        "id": "5c25b62afa082f9e",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/commands",
+        "url": "/api/commands",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 790,
+        "y": 480,
+        "wires": [
+            [
+                "1fbf70d6acfb658c"
+            ]
+        ]
+    },
+    {
+        "id": "8155e4d25675980a",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "POST/api/send",
+        "url": "/api/send",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 780,
+        "y": 540,
+        "wires": [
+            [
+                "8666064c2d7ea8b1"
+            ]
+        ]
+    },
+    {
+        "id": "7e1774cdb392d03e",
+        "type": "json",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 250,
+        "y": 120,
+        "wires": [
+            [
+                "31495396a96518e1"
+            ]
+        ]
+    },
+    {
+        "id": "1fbf70d6acfb658c",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Buscar último comando em commands",
+        "func": "// Busca o último comando registrado\nmsg.topic = `\n  SELECT * FROM commands\n  ORDER BY id DESC\n  LIMIT 1;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1170,
+        "y": 480,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "31495396a96518e1",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valores",
+        "func": "// Converte o payload JSON (string) em objeto\nlet data;\ntry {\n    data = JSON.parse(msg.payload);\n} catch (error) {\n    node.error(\"Invalid JSON payload\", msg);\n    return null;\n}\n\n// Extrai as variáveis\nmsg.throttle_angle = data.throttle_angle;\nmsg.temp_inlet = data.temp_inlet;\nmsg.temp_outlet = data.temp_outlet;\nmsg.pressure = data.pressure;\nmsg.air_mass = data.air_mass;\n\n// Cria o comando SQL e os valores\n/*\nmsg.topic = `\n    INSERT INTO readings (command_name, value)\n    VALUES\n        (?),\n        (?),\n        (?),\n        (?),\n        (?)\n`;\n*/\n\n//msg.payload = [throttle_angle, temp_inlet, temp_outlet, pressure, air_mass];\n/*\nmsg.payload = [\n    [\"throttle_angle\", throttle_angle],\n    [\"temp_inlet\", temp_inlet],\n    [\"temp_outlet\", temp_outlet],\n    [\"pressure\", pressure],\n    [\"air_mass\", air_mass]\n];\n*/\n\n// Retorna o objeto atualizado\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 120,
+        "wires": [
+            [
+                "34c856d8b440a516"
+            ]
+        ]
+    },
+    {
+        "id": "38cde51a2b4844da",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Inserir comando em commands",
+        "func": "// Converte o payload JSON (string) em objeto\nlet data;\ntry {\n    data = JSON.parse(msg.payload);\n} catch (error) {\n    node.error(\"Invalid JSON payload\", msg);\n    return null;\n}\n\n// Extrai as variáveis\n//let temperatura_alvo = data.temperatura_alvo;\n\nmsg.temperatura = data.temperatura_alvo;\n\n/*\nmsg.topic = `\n  INSERT INTO commands (target_temperature, executed)\n  VALUES (?, ?);\n`;\n\nmsg.payload = [temperatura_alvo, 1];\n*/\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1190,
+        "y": 540,
+        "wires": [
+            [
+                "1834664a1195f291"
+            ]
+        ]
+    },
+    {
+        "id": "8666064c2d7ea8b1",
+        "type": "json",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 970,
+        "y": 540,
+        "wires": [
+            [
+                "38cde51a2b4844da"
+            ]
+        ]
+    },
+    {
+        "id": "89bb832fc9f7d9e6",
+        "type": "mysql",
+        "z": "2a1ceb439cba946a",
+        "mydb": "47f16fd6cc2825ea",
+        "name": "MySQL",
+        "x": 1440,
+        "y": 360,
+        "wires": [
+            [
+                "6f48bece4818caa4"
+            ]
+        ]
+    },
+    {
+        "id": "6f48bece4818caa4",
+        "type": "http response",
+        "z": "2a1ceb439cba946a",
+        "name": "Resposta",
+        "statusCode": "200",
+        "headers": {},
+        "x": 1600,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "e04aeef5ca76068b",
+        "type": "ui_form",
+        "z": "2a1ceb439cba946a",
+        "name": "Input da temperatura",
+        "label": "",
+        "group": "b425380192da8322",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Temperatura (0-100°C)",
+                "value": "temperatura",
+                "type": "number",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "temperatura": ""
+        },
+        "payload": "",
+        "submit": "Confirmar",
+        "cancel": "Cancelar",
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 340,
+        "y": 580,
+        "wires": [
+            [
+                "ef5f56c0cf3603b1"
+            ]
+        ]
+    },
+    {
+        "id": "ef5f56c0cf3603b1",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Filtrar valor digitado",
+        "func": "if(msg.payload.temperatura < 0){\n    msg.payload.temperatura = 0;\n}else if(msg.payload.temperatura > 100){\n    msg.payload.temperatura = 100;\n}\n\nmsg.temperatura = msg.payload.temperatura;\n\n/*\nmsg.topic = `\n  INSERT INTO commands (target_temperature, executed)\n  VALUES (?, ?);\n`;\n\nmsg.payload = [msg.payload.temperatura, 1];\n*/\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 580,
+        "wires": [
+            [
+                "1834664a1195f291"
+            ]
+        ]
+    },
+    {
+        "id": "c9ec399cd4eca49d",
+        "type": "ui_text",
+        "z": "2a1ceb439cba946a",
+        "group": "b425380192da8322",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Label temperatura alvo",
+        "label": "",
+        "format": "Temperatura alvo: {{msg.temperatura}} °C",
+        "layout": "row-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1660,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "35f27fbdbf7dc37d",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/data/all",
+        "url": "/api/data/all",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 780,
+        "y": 360,
+        "wires": [
+            [
+                "129502849cc5daed"
+            ]
+        ]
+    },
+    {
+        "id": "129502849cc5daed",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Mostrar todos os dados em readings",
+        "func": "// Busca o último comando registrado\nmsg.topic = `\n  SELECT * FROM readings\n`;\n/*\nmsg.topic = `\n  SELECT * FROM sensor_data\n`;\n*/\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1170,
+        "y": 360,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "dabdb2d7f3de7c82",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Mostrar último registro de cada dado em readings",
+        "func": "// Quantidade de tipos de leitura: 5 (angulo da borboleta,\n// temperaturas de entrada e saída, pressão e massa de ar)\n\n// Busca o último comando registrado\nmsg.topic = `\n  SELECT * FROM readings\n  ORDER BY id DESC\n  LIMIT 5;\n`;\n/*\nmsg.topic = `\n  SELECT * FROM sensor_data\n  ORDER BY id DESC\n  LIMIT 1;\n`;\n*/\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 300,
+        "wires": [
+            [
+                "6815e73a18b81594"
+            ]
+        ]
+    },
+    {
+        "id": "57a6be272247edbb",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/data/latest",
+        "url": "/api/data/latest",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 790,
+        "y": 300,
+        "wires": [
+            [
+                "dabdb2d7f3de7c82"
+            ]
+        ]
+    },
+    {
+        "id": "2f480590609d7adb",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar em commands",
+        "func": "msg.topic = `\n  INSERT INTO commands (command_name, value, executed)\n  VALUES (?, ?, ?);\n`;\n\nmsg.payload = [\"temperatura_alvo\", msg.temperatura, msg.executed];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 700,
+        "wires": [
+            [
+                "c9ec399cd4eca49d",
+                "58016d0c33abfa5e",
+                "89bb832fc9f7d9e6",
+                "f75772a19e3351ea"
+            ]
+        ]
+    },
+    {
+        "id": "3329e80117255868",
+        "type": "ui_text",
+        "z": "2a1ceb439cba946a",
+        "group": "b425380192da8322",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "Label status",
+        "label": "",
+        "format": "Status: {{msg.executed}}",
+        "layout": "row-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1690,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "58016d0c33abfa5e",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Formatar para a label",
+        "func": "if(msg.executed == 0){\n  msg.executed = \"Alterando...\";\n}else{\n  msg.executed = \"Executado!\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1480,
+        "y": 700,
+        "wires": [
+            [
+                "3329e80117255868"
+            ]
+        ]
+    },
+    {
+        "id": "f95e6ca98ac744ef",
+        "type": "http in",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/data/temp",
+        "url": "/api/data/temp",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 790,
+        "y": 420,
+        "wires": [
+            [
+                "7d571641d8f66004"
+            ]
+        ]
+    },
+    {
+        "id": "7d571641d8f66004",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Mostrar valor atual de temp_inlet",
+        "func": "// Busca o último comando registrado\nmsg.topic = `\n  SELECT * FROM readings\n  WHERE command_name = 'temp_inlet'\n  ORDER BY id DESC\n  LIMIT 1;\n`;\n/*\nmsg.topic = `\n  SELECT * FROM sensor_data\n`;\n*/\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 420,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "84d57873ae4088ac",
+        "type": "split",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "splt": "\\n",
+        "spltType": "str",
+        "arraySplt": 1,
+        "arraySpltType": "len",
+        "stream": false,
+        "addname": "",
+        "property": "payload",
+        "x": 1690,
+        "y": 300,
+        "wires": [
+            [
+                "108f708f24355f02"
+            ]
+        ]
+    },
+    {
+        "id": "713ae6cb6ce56145",
+        "type": "debug",
+        "z": "2a1ceb439cba946a",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1870,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "108f708f24355f02",
+        "type": "switch",
+        "z": "2a1ceb439cba946a",
+        "name": "Separar comandos",
+        "property": "payload.command_name",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "throttle_angle",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "temp_inlet",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "temp_outlet",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "pressure",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "air_mass",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 5,
+        "x": 1890,
+        "y": 300,
+        "wires": [
+            [
+                "8d73cc1a31ed5b8a"
+            ],
+            [
+                "82464aeee8d8b1cb"
+            ],
+            [
+                "89b814803cc72ea7"
+            ],
+            [
+                "f3df04ead00fc406"
+            ],
+            [
+                "e1a34c787746d935"
+            ]
+        ]
+    },
+    {
+        "id": "8d73cc1a31ed5b8a",
+        "type": "change",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valor de throttle_angle",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.value_encrypted",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2180,
+        "y": 220,
+        "wires": [
+            [
+                "067ebe941b47697b"
+            ]
+        ]
+    },
+    {
+        "id": "3f3256691266570d",
+        "type": "ui_chart",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "group": "488ab7b6be6f1285",
+        "order": 1,
+        "width": 6,
+        "height": 6,
+        "label": "Ângulo da borboleta",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2620,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "82464aeee8d8b1cb",
+        "type": "change",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valor de temp_inlet",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.value_encrypted",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2170,
+        "y": 260,
+        "wires": [
+            [
+                "149bbe457d608d95"
+            ]
+        ]
+    },
+    {
+        "id": "d1944b7ed05504fa",
+        "type": "ui_chart",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "group": "488ab7b6be6f1285",
+        "order": 2,
+        "width": 6,
+        "height": 6,
+        "label": "Temperatura de Entrada",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2610,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f3df04ead00fc406",
+        "type": "change",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valor de pressure",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.value_encrypted",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2170,
+        "y": 340,
+        "wires": [
+            [
+                "09d24125052dde3d"
+            ]
+        ]
+    },
+    {
+        "id": "89b814803cc72ea7",
+        "type": "change",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valor de temp_outlet",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.value_encrypted",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2180,
+        "y": 300,
+        "wires": [
+            [
+                "f4f6f181f50e09a8"
+            ]
+        ]
+    },
+    {
+        "id": "9cd0905ec62e7cfe",
+        "type": "ui_chart",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "group": "488ab7b6be6f1285",
+        "order": 3,
+        "width": 6,
+        "height": 6,
+        "label": "Temperatura de Saída",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2620,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4c0e84606179dc0b",
+        "type": "ui_chart",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "group": "488ab7b6be6f1285",
+        "order": 4,
+        "width": 6,
+        "height": 6,
+        "label": "Pressão",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2660,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e1a34c787746d935",
+        "type": "change",
+        "z": "2a1ceb439cba946a",
+        "name": "Extrair valor de air_mass",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.value_encrypted",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2170,
+        "y": 380,
+        "wires": [
+            [
+                "97fc26d83dfc8279"
+            ]
+        ]
+    },
+    {
+        "id": "d144debec57796d8",
+        "type": "ui_chart",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "group": "488ab7b6be6f1285",
+        "order": 5,
+        "width": 6,
+        "height": 6,
+        "label": "Massa de Ar",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 2650,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1834664a1195f291",
+        "type": "http request",
+        "z": "2a1ceb439cba946a",
+        "name": "GET/api/data/temp",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "localhost:1880/api/data/temp",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 790,
+        "y": 580,
+        "wires": [
+            [
+                "a53953970595aa5b"
+            ]
+        ]
+    },
+    {
+        "id": "59ff5ba0599c706d",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Verificar temperatura",
+        "func": "// Pega o primeiro item do array (o objeto JSON)\nvar data = msg.payload[0];\n\n// Extrai o valor para uma variável\nlet temp_in = data.value_encrypted;\n//var temp_in = data.temp_inlet;\n\n//msg.temp_in = temp_in;\nmsg.payload = temp_in;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 580,
+        "wires": [
+            [
+                "9677e40a6218313c"
+            ]
+        ]
+    },
+    {
+        "id": "a53953970595aa5b",
+        "type": "json",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 970,
+        "y": 580,
+        "wires": [
+            [
+                "59ff5ba0599c706d"
+            ]
+        ]
+    },
+    {
+        "id": "6815e73a18b81594",
+        "type": "mysql",
+        "z": "2a1ceb439cba946a",
+        "mydb": "47f16fd6cc2825ea",
+        "name": "MySQL",
+        "x": 1440,
+        "y": 300,
+        "wires": [
+            [
+                "84d57873ae4088ac",
+                "6f48bece4818caa4"
+            ]
+        ]
+    },
+    {
+        "id": "6326c57a05e20f03",
+        "type": "ui_toast",
+        "z": "2a1ceb439cba946a",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": true,
+        "className": "",
+        "topic": "Alteração executada com sucesso!",
+        "name": "Notificação",
+        "x": 1690,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "4f8965f2935fb86e",
+        "type": "ui_toast",
+        "z": "2a1ceb439cba946a",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": true,
+        "className": "",
+        "topic": "Alteração na temperatura em execução!",
+        "name": "Notificação",
+        "x": 1690,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "f75772a19e3351ea",
+        "type": "switch",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "property": "executed",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1510,
+        "y": 600,
+        "wires": [
+            [
+                "4f8965f2935fb86e"
+            ],
+            [
+                "6326c57a05e20f03"
+            ]
+        ]
+    },
+    {
+        "id": "25cc6745f83c2924",
+        "type": "encrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "criptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 590,
+        "y": 60,
+        "wires": [
+            [
+                "60230e69e1b63c71"
+            ]
+        ]
+    },
+    {
+        "id": "34c856d8b440a516",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 1º valor no payload",
+        "func": "msg.payload = msg.throttle_angle.toString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 20,
+        "wires": [
+            [
+                "25cc6745f83c2924"
+            ]
+        ]
+    },
+    {
+        "id": "60230e69e1b63c71",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 1º valor criptografado",
+        "func": "msg.enc_throttle = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 100,
+        "wires": [
+            [
+                "3e05c1ea30221a5c"
+            ]
+        ]
+    },
+    {
+        "id": "3e05c1ea30221a5c",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 2º valor no payload",
+        "func": "msg.payload = msg.temp_inlet.toString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 20,
+        "wires": [
+            [
+                "7b4a43cfa0b9dbad"
+            ]
+        ]
+    },
+    {
+        "id": "7b4a43cfa0b9dbad",
+        "type": "encrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "criptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 870,
+        "y": 60,
+        "wires": [
+            [
+                "60ddd717c4c09263"
+            ]
+        ]
+    },
+    {
+        "id": "60ddd717c4c09263",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 2º valor criptografado",
+        "func": "msg.enc_temp_inlet = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 100,
+        "wires": [
+            [
+                "c7fc427fd3b9f9da"
+            ]
+        ]
+    },
+    {
+        "id": "8660fdb2d3e22035",
+        "type": "encrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "criptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 590,
+        "y": 180,
+        "wires": [
+            [
+                "cc7b451e231da1c9"
+            ]
+        ]
+    },
+    {
+        "id": "c7fc427fd3b9f9da",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 3º valor no payload",
+        "func": "msg.payload = msg.temp_outlet.toString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 140,
+        "wires": [
+            [
+                "8660fdb2d3e22035"
+            ]
+        ]
+    },
+    {
+        "id": "cc7b451e231da1c9",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 3º valor criptografado",
+        "func": "msg.enc_temp_outlet = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 220,
+        "wires": [
+            [
+                "1e8bf90cb84208e2"
+            ]
+        ]
+    },
+    {
+        "id": "1e8bf90cb84208e2",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 4º valor no payload",
+        "func": "msg.payload = msg.pressure.toString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 890,
+        "y": 140,
+        "wires": [
+            [
+                "64a58738df18c111"
+            ]
+        ]
+    },
+    {
+        "id": "64a58738df18c111",
+        "type": "encrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "criptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 850,
+        "y": 180,
+        "wires": [
+            [
+                "38da9216c092f548"
+            ]
+        ]
+    },
+    {
+        "id": "38da9216c092f548",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 4º valor criptografado",
+        "func": "msg.enc_pressure = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 220,
+        "wires": [
+            [
+                "4a6da9f0ba7ea0f8"
+            ]
+        ]
+    },
+    {
+        "id": "4a6da9f0ba7ea0f8",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 5º valor no payload",
+        "func": "msg.payload = msg.air_mass.toString();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1190,
+        "y": 80,
+        "wires": [
+            [
+                "3f369cbf0721ac7f"
+            ]
+        ]
+    },
+    {
+        "id": "3f369cbf0721ac7f",
+        "type": "encrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "criptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 1150,
+        "y": 120,
+        "wires": [
+            [
+                "2711dea90bea72fd"
+            ]
+        ]
+    },
+    {
+        "id": "2711dea90bea72fd",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Salvar 5º valor criptografado",
+        "func": "msg.enc_air_mass = msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1200,
+        "y": 160,
+        "wires": [
+            [
+                "11da2c2983eecc02"
+            ]
+        ]
+    },
+    {
+        "id": "11da2c2983eecc02",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Preparar consulta SQL",
+        "func": "// Cria o comando SQL e os valores\nmsg.topic = `\n    INSERT INTO readings (command_name, value_encrypted)\n    VALUES\n        (?),\n        (?),\n        (?),\n        (?),\n        (?)\n`;\n\nmsg.payload = [\n    [\"throttle_angle\", msg.enc_throttle],\n    [\"temp_inlet\", msg.enc_temp_inlet],\n    [\"temp_outlet\", msg.enc_temp_outlet],\n    [\"pressure\", msg.enc_pressure],\n    [\"air_mass\", msg.enc_air_mass]\n];\n\n// Retorna o objeto atualizado\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 220,
+        "wires": [
+            [
+                "89bb832fc9f7d9e6"
+            ]
+        ]
+    },
+    {
+        "id": "067ebe941b47697b",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "Descriptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 2400,
+        "y": 220,
+        "wires": [
+            [
+                "3f3256691266570d"
+            ]
+        ]
+    },
+    {
+        "id": "149bbe457d608d95",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "Descriptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 2400,
+        "y": 260,
+        "wires": [
+            [
+                "d1944b7ed05504fa"
+            ]
+        ]
+    },
+    {
+        "id": "f4f6f181f50e09a8",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "Descriptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 2400,
+        "y": 300,
+        "wires": [
+            [
+                "9cd0905ec62e7cfe"
+            ]
+        ]
+    },
+    {
+        "id": "09d24125052dde3d",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "Descriptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 2400,
+        "y": 340,
+        "wires": [
+            [
+                "4c0e84606179dc0b"
+            ]
+        ]
+    },
+    {
+        "id": "97fc26d83dfc8279",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "Descriptografar",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 2400,
+        "y": 380,
+        "wires": [
+            [
+                "d144debec57796d8"
+            ]
+        ]
+    },
+    {
+        "id": "9677e40a6218313c",
+        "type": "decrypt",
+        "z": "2a1ceb439cba946a",
+        "name": "",
+        "algorithm": "AES",
+        "key": "a",
+        "x": 1260,
+        "y": 620,
+        "wires": [
+            [
+                "efe0211a685df682"
+            ]
+        ]
+    },
+    {
+        "id": "efe0211a685df682",
+        "type": "function",
+        "z": "2a1ceb439cba946a",
+        "name": "Verificar temperatura",
+        "func": "msg.temp_in = msg.payload;\n\n// Confere se precisa alterar a temperatura {ñ executado : 0 , executado : 1}\nif(msg.temperatura != msg.temp_in){\n    msg.executed = 0;\n}\nelse{\n    msg.executed = 1;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 660,
+        "wires": [
+            [
+                "2f480590609d7adb"
+            ]
+        ]
+    },
+    {
+        "id": "48a8118dda3e6a89",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 6,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "3716524ef3a4e20b",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 7,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "b590e7a47a6d8ddd",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 8,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "b6a8cbf3ef136b55",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 9,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "ede4a1a70ec4e625",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 10,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "3971e9ae55d58d72",
+        "type": "ui_spacer",
+        "z": "2a1ceb439cba946a",
+        "name": "spacer",
+        "group": "488ab7b6be6f1285",
+        "order": 11,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "47f16fd6cc2825ea",
+        "type": "MySQLdatabase",
+        "name": "Conexão Local",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "ltr_control",
+        "tz": "",
+        "charset": "UTF8"
+    },
+    {
+        "id": "b425380192da8322",
+        "type": "ui_group",
+        "name": "Controle",
+        "tab": "621a75fdcd07ad13",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "488ab7b6be6f1285",
+        "type": "ui_group",
+        "name": "Leituras",
+        "tab": "621a75fdcd07ad13",
+        "order": 2,
+        "disp": true,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "621a75fdcd07ad13",
+        "type": "ui_tab",
+        "name": "Dashboard",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "c769800c7bc2bae8",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-mysql": "2.0.0",
+            "node-red-dashboard": "3.6.6",
+            "node-red-contrib-crypto-js": "0.1.1"
+        }
+    }
+]
